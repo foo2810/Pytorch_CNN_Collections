@@ -1,0 +1,3 @@
+[submodule "pamap2"]
+	path = pamap2
+	url = https://github.com/foo2810/PAMAP2-Loader.git
