@@ -35,7 +35,7 @@ def training(model, train_loader, test_loader, n_epochs, criterion, optimizer, s
                 inputs, labels = inputs.to(device), labels.to(device)
                 outputs = model(inputs)
                 loss = criterion(outputs, labels)
-                test_loss += loss.item()
+                test_loss += loss.item() * inputs.size(0)
                 test_acc += torch.sum(torch.max(outputs, dim=1)[1] == labels).item()
 
         test_loss /= len(test_loader.dataset)
@@ -56,7 +56,7 @@ def training(model, train_loader, test_loader, n_epochs, criterion, optimizer, s
     hist = {
         'train_loss': train_loss_list,
         'train_acc': train_acc_list,
-        'test_acc': test_loss_list,
+        'test_loss': test_loss_list,
         'test_acc': test_acc_list,
     }
 
