@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from inception_resnet import InceptionResNetV2Base, InceptionModule35, InceptionModule17, InceptionModule8
+from .inception_resnet import InceptionResNetV2Base, InceptionModule35, InceptionModule17, InceptionModule8
 
 class PolyNet(nn.Module):
     def __init__(self, in_shape, n_classes, dropout_rate=0.5):
