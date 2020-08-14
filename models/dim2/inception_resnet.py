@@ -1,6 +1,17 @@
 import torch
 import torch.nn as nn
 
+class ConvBNReLU(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size, stride, padding):
+        super(ConvBNReLU, self).__init__()
+        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, stride=stride, padding=padding)
+        self.bn = nn.BatchNorm2d(out_channels)
+        self.relu = nn.ReLU(inplace=True)
+    
+    def forward(self, x):
+        x = self.relu(self.bn(self.conv(x)))
+        return x
+
 class InceptionResNetV2(nn.Module):
     def __init__(self, in_shape, n_classes, dropout_rate=0.5):
         super(InceptionResNetV2, self).__init__()
@@ -37,57 +48,57 @@ class InceptionResNetV2Base(nn.Module):
         super(InceptionResNetV2Base, self).__init__()
 
         self.head_path = nn.Sequential(
-            nn.Conv2d(in_channels, 32, kernel_size=3, stride=2, padding=3//2),
-            nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=3//2),
-            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=3//2),
-            nn.MaxPool2d(kernel_size=3, stride=2),
-            nn.Conv2d(64, 80, kernel_size=1, stride=1, padding=0),
-            nn.Conv2d(80, 192, kernel_size=3, stride=1, padding=3//2),
-            nn.MaxPool2d(kernel_size=3, stride=2)
+            ConvBNReLU(in_channels, 32, kernel_size=3, stride=2, padding=3//2),
+            ConvBNReLU(32, 32, kernel_size=3, stride=1, padding=3//2),
+            ConvBNReLU(32, 64, kernel_size=3, stride=1, padding=3//2),
+            nn.MaxPool2d(kernel_size=3, stride=2, padding=3//2),
+            ConvBNReLU(64, 80, kernel_size=1, stride=1, padding=0),
+            ConvBNReLU(80, 192, kernel_size=3, stride=1, padding=3//2),
+            nn.MaxPool2d(kernel_size=3, stride=2, padding=3//2)
         )
 
         # Branches 1
-        self.b1_conv11 = nn.Conv2d(192, 96, kernel_size=1, stride=1, padding=0)
+        self.b1_conv11 = ConvBNReLU(192, 96, kernel_size=1, stride=1, padding=0)
 
-        self.b1_conv21 = nn.Conv2d(192, 48, kernel_size=1, stride=1, padding=0)
-        self.b1_conv22 = nn.Conv2d(48, 64, kernel_size=5, stride=1, padding=5//2)
+        self.b1_conv21 = ConvBNReLU(192, 48, kernel_size=1, stride=1, padding=0)
+        self.b1_conv22 = ConvBNReLU(48, 64, kernel_size=5, stride=1, padding=5//2)
 
-        self.b1_conv31 = nn.Conv2d(192, 64, kernel_size=1, stride=1, padding=0)
-        self.b1_conv32 = nn.Conv2d(64, 96, kernel_size=3, stride=1, padding=3//2)
-        self.b1_conv33 = nn.Conv2d(96, 96, kernel_size=3, stride=1, padding=3//2)
+        self.b1_conv31 = ConvBNReLU(192, 64, kernel_size=1, stride=1, padding=0)
+        self.b1_conv32 = ConvBNReLU(64, 96, kernel_size=3, stride=1, padding=3//2)
+        self.b1_conv33 = ConvBNReLU(96, 96, kernel_size=3, stride=1, padding=3//2)
 
         self.b1_avgpool41 = nn.AvgPool2d(kernel_size=3, stride=1, padding=3//2)
-        self.b1_conv42 = nn.Conv2d(192, 64, kernel_size=1, stride=1, padding=0)
+        self.b1_conv42 = ConvBNReLU(192, 64, kernel_size=1, stride=1, padding=0)
 
         self.stage_a_path = stage_a(320)
 
         # Branches 2
-        self.b2_conv11 = nn.Conv2d(320, 384, kernel_size=3, stride=1, padding=3//2)
+        self.b2_conv11 = ConvBNReLU(320, 384, kernel_size=3, stride=2, padding=3//2)
 
-        self.b2_conv21 = nn.Conv2d(320, 256, kernel_size=1, stride=1, padding=0)
-        self.b2_conv22 = nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=3//2)
-        self.b2_conv23 = nn.Conv2d(256, 384, kernel_size=3, stride=1, padding=3//2)
+        self.b2_conv21 = ConvBNReLU(320, 256, kernel_size=1, stride=1, padding=0)
+        self.b2_conv22 = ConvBNReLU(256, 256, kernel_size=3, stride=1, padding=3//2)
+        self.b2_conv23 = ConvBNReLU(256, 384, kernel_size=3, stride=2, padding=3//2)
 
-        self.b2_avgpool31 = nn.AvgPool2d(kernel_size=3, stride=1, padding=3//2)
+        self.b2_avgpool31 = nn.AvgPool2d(kernel_size=3, stride=2, padding=3//2)
 
         self.stage_b_path = stage_b(1088)
 
 
         # Branches 3
-        self.b3_conv11 = nn.Conv2d(1088, 256, kernel_size=1, stride=1, padding=0)
-        self.b3_conv12 = nn.Conv2d(256, 384, kernel_size=3, stride=2, padding=3//2)
+        self.b3_conv11 = ConvBNReLU(1088, 256, kernel_size=1, stride=1, padding=0)
+        self.b3_conv12 = ConvBNReLU(256, 384, kernel_size=3, stride=2, padding=3//2)
 
-        self.b3_conv21 = nn.Conv2d(1088, 256, kernel_size=1, stride=1, padding=0)
-        self.b3_conv22 = nn.Conv2d(256, 288, kernel_size=3, stride=2, padding=3//2)
+        self.b3_conv21 = ConvBNReLU(1088, 256, kernel_size=1, stride=1, padding=0)
+        self.b3_conv22 = ConvBNReLU(256, 288, kernel_size=3, stride=2, padding=3//2)
  
-        self.b3_conv31 = nn.Conv2d(1088, 256, kernel_size=1, stride=1, padding=0)
-        self.b3_conv32 = nn.Conv2d(256, 288, kernel_size=3, stride=1, padding=3//2)
-        self.b3_conv33 = nn.Conv2d(288, 320, kernel_size=3, stride=2, padding=3//2)
+        self.b3_conv31 = ConvBNReLU(1088, 256, kernel_size=1, stride=1, padding=0)
+        self.b3_conv32 = ConvBNReLU(256, 288, kernel_size=3, stride=1, padding=3//2)
+        self.b3_conv33 = ConvBNReLU(288, 320, kernel_size=3, stride=2, padding=3//2)
 
         self.b3_maxpool31 = nn.MaxPool2d(kernel_size=3, stride=2, padding=3//2)
 
         self.stage_c_path = stage_c(2080)
-        self.conv = nn.Conv2d(2080, 1536, kernel_size=1, stride=1, padding=0)
+        self.conv = ConvBNReLU(2080, 1536, kernel_size=1, stride=1, padding=0)
 
 
     def forward(self, x):
@@ -162,16 +173,16 @@ class InceptionModule35(nn.Module):
 
         self.scale = scale
 
-        self.conv11 = nn.Conv2d(in_channels, 32, kernel_size=1, stride=1, padding=0)
+        self.conv11 = ConvBNReLU(in_channels, 32, kernel_size=1, stride=1, padding=0)
 
-        self.conv21 = nn.Conv2d(in_channels, 32, kernel_size=1, stride=1, padding=0)
-        self.conv22 = nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=3//2)
+        self.conv21 = ConvBNReLU(in_channels, 32, kernel_size=1, stride=1, padding=0)
+        self.conv22 = ConvBNReLU(32, 32, kernel_size=3, stride=1, padding=3//2)
 
-        self.conv31 = nn.Conv2d(in_channels, 32, kernel_size=1, stride=1, padding=0)
-        self.conv32 = nn.Conv2d(32, 48, kernel_size=3, stride=1, padding=3//2)
-        self.conv33 = nn.Conv2d(48, 64, kernel_size=3, stride=1, padding=3//2)
+        self.conv31 = ConvBNReLU(in_channels, 32, kernel_size=1, stride=1, padding=0)
+        self.conv32 = ConvBNReLU(32, 48, kernel_size=3, stride=1, padding=3//2)
+        self.conv33 = ConvBNReLU(48, 64, kernel_size=3, stride=1, padding=3//2)
 
-        self.conv_f = nn.Conv2d(32+32+64, in_channels, kernel_size=1, stride=1, padding=0)
+        self.conv_f = ConvBNReLU(32+32+64, in_channels, kernel_size=1, stride=1, padding=0)
         if activation_fn is not None:
             self.activation = activation_fn()
         else:
@@ -196,13 +207,13 @@ class InceptionModule17(nn.Module):
 
         self.scale = scale
 
-        self.conv11 = nn.Conv2d(in_channels, 192, kernel_size=1, stride=1, padding=0)
+        self.conv11 = ConvBNReLU(in_channels, 192, kernel_size=1, stride=1, padding=0)
 
-        self.conv21 = nn.Conv2d(in_channels, 128, kernel_size=1, stride=1, padding=0)
-        self.conv22 = nn.Conv2d(128, 160, kernel_size=(1, 7), stride=1, padding=(0, 7//2))
-        self.conv23 = nn.Conv2d(160, 192, kernel_size=(7, 1), stride=1, padding=(7//2, 0))
+        self.conv21 = ConvBNReLU(in_channels, 128, kernel_size=1, stride=1, padding=0)
+        self.conv22 = ConvBNReLU(128, 160, kernel_size=(1, 7), stride=1, padding=(0, 7//2))
+        self.conv23 = ConvBNReLU(160, 192, kernel_size=(7, 1), stride=1, padding=(7//2, 0))
 
-        self.conv_f = nn.Conv2d(192+192, in_channels, kernel_size=1, stride=1, padding=0)
+        self.conv_f = ConvBNReLU(192+192, in_channels, kernel_size=1, stride=1, padding=0)
         if activation_fn is not None:
             self.activation = activation_fn()
         else:
@@ -226,13 +237,13 @@ class InceptionModule8(nn.Module):
  
         self.scale = scale
 
-        self.conv11 = nn.Conv2d(in_channels, 192, kernel_size=1, stride=1, padding=0)
+        self.conv11 = ConvBNReLU(in_channels, 192, kernel_size=1, stride=1, padding=0)
 
-        self.conv21 = nn.Conv2d(in_channels, 192, kernel_size=1, stride=1, padding=0)
-        self.conv22 = nn.Conv2d(192, 224, kernel_size=(1, 3), stride=1, padding=(0, 3//2))
-        self.conv23 = nn.Conv2d(224, 256, kernel_size=(3, 1), stride=1, padding=(3//2, 0))
+        self.conv21 = ConvBNReLU(in_channels, 192, kernel_size=1, stride=1, padding=0)
+        self.conv22 = ConvBNReLU(192, 224, kernel_size=(1, 3), stride=1, padding=(0, 3//2))
+        self.conv23 = ConvBNReLU(224, 256, kernel_size=(3, 1), stride=1, padding=(3//2, 0))
 
-        self.conv_f = nn.Conv2d(192+256, in_channels, kernel_size=1, stride=1, padding=0)
+        self.conv_f = ConvBNReLU(192+256, in_channels, kernel_size=1, stride=1, padding=0)
         if activation_fn is not None:
             self.activation = activation_fn()
         else:
