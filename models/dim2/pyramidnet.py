@@ -51,7 +51,7 @@ class BasicBlock(nn.Module):
         out = self.bn3(out)
 
         if self.downsample is not None:
-            identity = self.downsample(x)
+            identity = self.downsample(identity)
         
         c_identity = identity.size(1)
         c_out = out.size(1)
@@ -108,7 +108,7 @@ class Bottleneck(nn.Module):
         out = self.bn4(out)
 
         if self.downsample is not None:
-            identity = self.downsample(x)
+            identity = self.downsample(identity)
         
         c_identity = identity.size(1)
         c_out = out.size(1)
