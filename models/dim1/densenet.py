@@ -246,3 +246,19 @@ def densenet201(**kwargs):
           but slower. Default: *False*. See `"paper" <https://arxiv.org/pdf/1707.06990.pdf>`_
     """
     return _densenet('densenet201', 32, (6, 12, 48, 32), 64, **kwargs)
+
+if __name__ == '__main__':
+    import sys
+    sys.path.append('./')
+
+    models = ['densenet121', 'densenet161', 'densenet169', 'densenet201']
+
+    dummy = torch.zeros(2, 3, 224, dtype=torch.float)
+    for model in models:
+        print('[{}]'.format(model))
+        model_fn = globals()[model]
+
+        net = model_fn(in_channels=3, num_classes=1)
+        
+        out = net(dummy)
+        print(out.shape)
