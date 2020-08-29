@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 
+__all__ = ['InceptionResNetV2', 'inception_resnet_v2']
+
 class ConvBNReLU(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride, padding):
         super(ConvBNReLU, self).__init__()
@@ -261,6 +263,8 @@ class InceptionModule8(nn.Module):
 
         return x
 
+def inception_resnet_v2(in_shape, num_classes, dropout_rate=0.5, **kwargs):
+    return InceptionResNetV2(in_shape=in_shape, n_classes=num_classes, dropout_rate=dropout_rate)
 
 if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
